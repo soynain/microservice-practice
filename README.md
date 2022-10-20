@@ -8,7 +8,8 @@ It's gonna be ruff :c
 This is the initial schema, for now I'll be designing with diagrams the architecture of this stuff,
 hands off first, the general architecture of the small system I'm tryna make
 
-![microservicios-arquitecturav1 0 drawio](https://user-images.githubusercontent.com/78714792/197006287-e89097d0-c24c-4c86-a123-229127f24b29.png)
+![microservicios-arquitecturav1 0 drawio (1)](https://user-images.githubusercontent.com/78714792/197021480-b172184b-ebb9-43da-804f-687b4e1c344d.png)
+
 
 Now I have to define the database schemas and the orchestor events with the saga pattern.
 
