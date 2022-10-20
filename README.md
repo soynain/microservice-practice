@@ -24,7 +24,8 @@ already coding.
 
 ![user_case-inventory-remove](https://user-images.githubusercontent.com/78714792/197045252-dcde84de-5440-4b6f-9676-2962e2bf67d7.png)
 
-![use_case-inventory-modify-corrected](https://user-images.githubusercontent.com/78714792/197047393-cab77525-94aa-48f7-b41a-4c8623d7cf7d.png)
+![modoficar corregido](https://user-images.githubusercontent.com/78714792/197047771-19ebeffa-39d6-47da-b0a8-9ff760b200e2.png)
+
 
 
 # RELATIONAL DATABASES
