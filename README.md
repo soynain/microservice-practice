@@ -24,7 +24,8 @@ already coding.
 
 ![user_case-inventory-remove](https://user-images.githubusercontent.com/78714792/197045252-dcde84de-5440-4b6f-9676-2962e2bf67d7.png)
 
-![user_case-inventory-modify](https://user-images.githubusercontent.com/78714792/197045296-70f17b62-d8d5-44cd-9651-96f21daca890.png)
+![use_case-inventory-modify-corrected](https://user-images.githubusercontent.com/78714792/197047393-cab77525-94aa-48f7-b41a-4c8623d7cf7d.png)
+
 
 # RELATIONAL DATABASES
 I decided to try another relational to host user credentials instead of MongoDB as I specified in the arquitecture diagram
