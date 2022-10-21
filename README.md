@@ -32,6 +32,8 @@ already coding.
 
 ![usercase_sellbuy_checkout](https://user-images.githubusercontent.com/78714792/197240174-c30edc5b-2338-4f41-963d-29492bd92a7a.png)
 
+![usecase_items_remove](https://user-images.githubusercontent.com/78714792/197244180-1fd61bc5-f021-4a59-b01c-01763f4b1ff9.png)
+
 
 
 # RELATIONAL DATABASES
