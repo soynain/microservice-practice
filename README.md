@@ -1,7 +1,7 @@
 # Microservice introduction practice
 
 Hi, welcome to my repo. I'm planning to get into Microservices, the design, programming
-and deployment of this services, as the design patterns too, security and more stuff.
+and deployment of these services, as the design patterns too, security and more stuff.
 
 It's gonna be ruff :c
 
