@@ -5,6 +5,8 @@ and deployment of this services, as the design patterns too, security and more s
 
 It's gonna be ruff :c
 
+DIAGRAMS BELOW CAN BE CHANGED OVER THE TIME I'M INVESTING IN THIS REPO
+
 This is the initial schema, for now I'll be designing with diagrams the architecture of this stuff,
 hands off first, the general architecture of the small system I'm tryna make
 
@@ -25,6 +27,10 @@ already coding.
 ![user_case-inventory-remove](https://user-images.githubusercontent.com/78714792/197045252-dcde84de-5440-4b6f-9676-2962e2bf67d7.png)
 
 ![modoficar corregido](https://user-images.githubusercontent.com/78714792/197047771-19ebeffa-39d6-47da-b0a8-9ff760b200e2.png)
+
+![usecase_sells_savetocart](https://user-images.githubusercontent.com/78714792/197240155-7a8fab54-5bd7-4362-b537-3d08e73d2719.png)
+
+![usercase_sellbuy_checkout](https://user-images.githubusercontent.com/78714792/197240174-c30edc5b-2338-4f41-963d-29492bd92a7a.png)
 
 
 
