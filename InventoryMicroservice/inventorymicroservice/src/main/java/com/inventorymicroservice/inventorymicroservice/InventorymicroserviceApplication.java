@@ -1,0 +1,13 @@
+package com.inventorymicroservice.inventorymicroservice;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class InventorymicroserviceApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(InventorymicroserviceApplication.class, args);
+	}
+
+}
