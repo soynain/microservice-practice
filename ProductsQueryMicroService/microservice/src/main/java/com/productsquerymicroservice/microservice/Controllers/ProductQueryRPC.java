@@ -12,18 +12,18 @@ import com.productsquerymicroservice.microservice.Models.ProductDetails;
 import com.productsquerymicroservice.microservice.Services.DAOProductQueryImpl;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/products")
 public class ProductQueryRPC {
     
     @Autowired
     DAOProductQueryImpl productQueryImpl;
 
-    @GetMapping("/products/get-all")
+    @GetMapping("/get-all")
     public List<ProductDetails> getProductsQuery(){
         return productQueryImpl.getAllProducts();
     }
 
-    @GetMapping("/products/get/{id}")
+    @GetMapping("/get/{id}")
     public ProductDetails getSpecificProduct(@PathVariable Long id){
         return productQueryImpl.getProductById(id);
     }

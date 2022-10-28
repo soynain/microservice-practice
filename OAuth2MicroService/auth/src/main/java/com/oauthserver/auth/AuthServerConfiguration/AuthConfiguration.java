@@ -10,26 +10,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -42,66 +40,69 @@ import com.nimbusds.jose.proc.SecurityContext;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class AuthConfiguration {
-	private static final Logger log = LoggerFactory.getLogger(AuthConfiguration.class);
+public class AuthConfiguration{
 
 	@Bean
-	@Order(1)
+	public SecurityFilterChain securityFilterChain (HttpSecurity http) throws Exception{
+		return http
+				.csrf(csrf->csrf.disable())
+				.authorizeRequests(
+					auth->
+					auth.anyRequest().authenticated()
+				)
+				.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+				.httpBasic(Customizer.withDefaults())
+				.build();
+	}
+
+	@Bean
+	public InMemoryUserDetailsManager user(){
+		return new InMemoryUserDetailsManager(User.withUsername("n").password("{noop}1").authorities("read").build());
+	}
+}
+/*
+@Configuration(proxyBeanMethods = false)
+public class AuthConfiguration{
+
+	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 		OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-		http.exceptionHandling((exceptions) -> 
-			exceptions.authenticationEntryPoint(
-					new LoginUrlAuthenticationEntryPoint("/login")
-			)
-		);
-
-		return http.build();
+		return http.formLogin(Customizer.withDefaults()).build();
 	}
 
-	@Bean
-	@Order(2)
-	public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests((authorize) -> 
-			authorize.anyRequest().authenticated()
-		)
-				// Form login handles the redirect to the login page from the
-				// authorization server filter chain
-				.formLogin(Customizer.withDefaults());
 
-		return http.build();
-	}
 
-	@Bean
-	public InMemoryUserDetailsManager userDetailsService() {
-		UserDetails user = User.builder()
-				.username("u")
-				.password(passwordEncoder().encode("1"))
-				.roles("USER")
-				.build();
-		//log.info(passwordEncoder().encode("pas"));
-		return new InMemoryUserDetailsManager(user);
-	}
+    @Bean
+    public UserDetailsService users() {    
+        UserDetails user = User.withUsername("u")
+                .password(passwordEncoder().encode("1"))
+                .roles("USER")
+                .build();
+        
+        return new InMemoryUserDetailsManager(user);
+        
+    }
+
+
+	
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
-		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		return NoOpPasswordEncoder.getInstance();
 	}
 
 	@Bean
 	public RegisteredClientRepository registeredClientRepository() {
 		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-				.clientId("messaging-client")
-				.clientSecret("{noop}secret")
+				.clientId("client")
+				.clientSecret("secret")
 				.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
 				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-				.redirectUri("http://127.0.0.1:9000/login/oauth2/code/messaging-client-oidc")
-				.redirectUri("http://127.0.0.1:9000/authorized")
+				.redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
+				.redirectUri("http://127.0.0.1:8080/authorized")
 				.scope(OidcScopes.OPENID)
-				.scope("message.read")
-				.scope("message.write")
 				.clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
 				.build();
 
@@ -137,4 +138,4 @@ public class AuthConfiguration {
 	public ProviderSettings providerSettings() {
 		return ProviderSettings.builder().build();
 	}
-}
+} */
