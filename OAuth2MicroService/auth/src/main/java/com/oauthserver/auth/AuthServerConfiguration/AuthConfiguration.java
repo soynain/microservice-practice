@@ -37,48 +37,71 @@ import org.springframework.security.oauth2.server.authorization.config.ProviderS
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.oauthserver.auth.AuthErrorHandlers.AuthFailureHandler;
+import com.oauthserver.auth.AuthErrorHandlers.AuthLogoutHandler;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 public class AuthConfiguration {
+	public static final Logger log = LoggerFactory.getLogger(AuthConfiguration.class);
 
-	/*
-	 * @Bean
-	 * public SecurityFilterChain securityFilterChain (HttpSecurity http) throws
-	 * Exception{
-	 * return http
-	 * .csrf(csrf->csrf.disable())
-	 * .authorizeRequests(
-	 * auth->
-	 * auth.anyRequest().authenticated()
-	 * )
-	 * .sessionManagement(session->session.sessionCreationPolicy(
-	 * SessionCreationPolicy.STATELESS))
-	 * .httpBasic(Customizer.withDefaults())
-	 * .build();
-	 * }
-	 */
-
+	@Bean
 	@Order(Ordered.HIGHEST_PRECEDENCE)
-	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-		OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-		return http.formLogin(Customizer.withDefaults()).build();
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		// OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+		// return http.formLogin(Customizer.withDefaults()).build();
+		  return http
+		  .authorizeRequests(auth->auth.antMatchers("/**").authenticated())
+		 // .authorizeRequests(auth->auth.antMatchers("/login**").permitAll())
+		  //.authorizeRequests(auth->auth.antMatchers("/microservice**").permitAll())
+		  .formLogin()
+		  .loginPage("/login")
+		  .permitAll()
+		  .defaultSuccessUrl("/another", true)
+		  .failureHandler(authenticationFailureHandler())
+		  .permitAll()
+		  .and()
+		  .logout()
+		  //.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+		  //.logoutUrl("/microservice/logout")
+		  .deleteCookies("JESSIONID")
+		  .logoutSuccessHandler(authenticationLogoutHandler())
+		  .permitAll()
+		  .and()
+		  .csrf()
+		  .disable()
+		  .build();
+		 
+		/*return http.authorizeRequests()
+				.anyRequest()
+				.authenticated()
+				.and()
+				.formLogin()
+				.loginPage("/login")
+				.defaultSuccessUrl("/another", true)
+				.permitAll()
+				.and()
+				.logout()
+				.permitAll().and().build();*/
+				/*return http.authorizeRequests(auth->auth.antMatchers("/**").permitAll())
+				.formLogin(Customizer.withDefaults())
+				.build();*/
+				/*http.authorizeRequests().antMatchers("/").permitAll()
+				.and().formLogin().loginPage("/loginzo").permitAll();
+
+				return http.build();*/
 	}
 
 	@Bean
 	public InMemoryUserDetailsManager user() {
-		/*
-		 * The createDelegatingPasswordEncoder saves passwords in bcrypt by default
-		 * and it appears you can save many passwords in many different encryption
-		 * algorithms
-		 * by using prefixes
-		 */
+
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		return new InMemoryUserDetailsManager(
 				User.withUsername("n")
@@ -90,15 +113,19 @@ public class AuthConfiguration {
 	@Bean
 	public RegisteredClientRepository registeredClientRepository() {
 		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-				.clientId("client")
-				.clientSecret("secret")
+				.clientId("messaging-client")
+				.clientSecret("{noop}secret")
 				.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
 				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
 				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-				.redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
-				.redirectUri("http://127.0.0.1:8080/authorized")
-				.redirectUri("https://spring.io/auth")
+				.redirectUri("http://127.0.0.1:9000/login/oauth2/code/messaging-client-oidc")
+				.redirectUri("http://127.0.0.1:9000/authorized")
+				.redirectUri("http://spring.io/auth")
 				.scope(OidcScopes.OPENID)
+				.scope("message.read")
+				.scope("message.write")
+
 				// .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
 				.build();
 
@@ -129,93 +156,21 @@ public class AuthConfiguration {
 			throw new IllegalStateException(ex);
 		}
 		return keyPair;
-	}
+	} 
 
-	@Bean
+ 	@Bean
 	public ProviderSettings providerSettings() {
 		return ProviderSettings.builder().build();
 	}
+
+	@Bean
+	public AuthFailureHandler authenticationFailureHandler() {
+		return new AuthFailureHandler();
+	}
+
+	@Bean
+	public AuthLogoutHandler authenticationLogoutHandler() {
+		return new AuthLogoutHandler();
+	}
+
 }
-/*
- * @Configuration(proxyBeanMethods = false)
- * public class AuthConfiguration{
- * 
- * @Bean
- * 
- * @Order(Ordered.HIGHEST_PRECEDENCE)
- * public SecurityFilterChain
- * authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
- * OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
- * return http.formLogin(Customizer.withDefaults()).build();
- * }
- * 
- * 
- * 
- * @Bean
- * public UserDetailsService users() {
- * UserDetails user = User.withUsername("u")
- * .password(passwordEncoder().encode("1"))
- * .roles("USER")
- * .build();
- * 
- * return new InMemoryUserDetailsManager(user);
- * 
- * }
- * 
- * 
- * 
- * 
- * @Bean
- * public PasswordEncoder passwordEncoder() {
- * return NoOpPasswordEncoder.getInstance();
- * }
- * 
- * @Bean
- * public RegisteredClientRepository registeredClientRepository() {
- * RegisteredClient registeredClient =
- * RegisteredClient.withId(UUID.randomUUID().toString())
- * .clientId("client")
- * .clientSecret("secret")
- * .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
- * .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
- * .redirectUri("http://127.0.0.1:8080/login/oauth2/code/messaging-client-oidc")
- * .redirectUri("http://127.0.0.1:8080/authorized")
- * .scope(OidcScopes.OPENID)
- * .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).
- * build())
- * .build();
- * 
- * return new InMemoryRegisteredClientRepository(registeredClient);
- * }
- * 
- * @Bean
- * public JWKSource<SecurityContext> jwkSource() {
- * KeyPair keyPair = generateRsaKey();
- * RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
- * RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
- * RSAKey rsaKey = new RSAKey.Builder(publicKey)
- * .privateKey(privateKey)
- * .keyID(UUID.randomUUID().toString())
- * .build();
- * JWKSet jwkSet = new JWKSet(rsaKey);
- * return new ImmutableJWKSet<>(jwkSet);
- * }
- * 
- * private static KeyPair generateRsaKey() {
- * KeyPair keyPair;
- * try {
- * KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
- * keyPairGenerator.initialize(2048);
- * keyPair = keyPairGenerator.generateKeyPair();
- * } catch (Exception ex) {
- * throw new IllegalStateException(ex);
- * }
- * return keyPair;
- * }
- * 
- * @Bean
- * public ProviderSettings providerSettings() {
- * return ProviderSettings.builder().build();
- * }
- * }
- */
