@@ -12,7 +12,6 @@ public class LoginController {
     @GetMapping("/login")
     public ModelAndView getLoginForm(){
         ModelAndView c1=new ModelAndView("userLogin");
-        c1.addObject("profObject", "hola carnal");
         return c1;
     }
 

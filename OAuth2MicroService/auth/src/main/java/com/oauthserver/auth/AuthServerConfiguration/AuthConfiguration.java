@@ -4,15 +4,19 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,7 +28,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -37,7 +40,11 @@ import org.springframework.security.oauth2.server.authorization.config.ProviderS
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -46,40 +53,51 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.oauthserver.auth.AuthErrorHandlers.AuthFailureHandler;
 import com.oauthserver.auth.AuthErrorHandlers.AuthLogoutHandler;
+import com.oauthserver.auth.CustomFilterPackage.JsonVueCredentialsFilter;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 public class AuthConfiguration {
 	public static final Logger log = LoggerFactory.getLogger(AuthConfiguration.class);
 
+/* */	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+			throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
+	}
+
 	@Bean
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		// OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 		// return http.formLogin(Customizer.withDefaults()).build();
-		  return http
-		  .authorizeRequests(auth->auth.antMatchers("/**").authenticated())
-		 // .authorizeRequests(auth->auth.antMatchers("/login**").permitAll())
-		  //.authorizeRequests(auth->auth.antMatchers("/microservice**").permitAll())
-		  .formLogin()
-		  .loginPage("/login")
-		  .usernameParameter("username")
-		  .passwordParameter("password")
-		  .permitAll()
-		  .defaultSuccessUrl("/another", true)
-		  .failureHandler(authenticationFailureHandler())
-		  .permitAll()
-		  .and()
-		  .logout()
-		  //.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-		  //.logoutUrl("/microservice/logout")
-		  .deleteCookies("JESSIONID")
-		  .logoutSuccessHandler(authenticationLogoutHandler())
-		  .permitAll()
-		  .and()
-		  .csrf()
-		  .disable()
-		  .build();
+
+		JsonVueCredentialsFilter cumbo = new JsonVueCredentialsFilter();
+		cumbo.setAuthenticationManager(this.authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)));
+		return http
+				.authorizeRequests(auth -> auth.antMatchers("/**").authenticated())
+				.addFilterAt(cumbo, UsernamePasswordAuthenticationFilter.class)
+				//.authenticationManager(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)))
+				.formLogin()
+				.loginPage("/login")
+				.usernameParameter("username")
+				.passwordParameter("password")
+				.permitAll()
+				.defaultSuccessUrl("/another", true)
+				// .failureHandler(authenticationFailureHandler())
+				.permitAll()
+				.and()
+				.logout()
+				// .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+				// .logoutUrl("/microservice/logout")
+				.deleteCookies("JESSIONID")
+				.logoutSuccessHandler(authenticationLogoutHandler())
+				.permitAll()
+				.and()
+				.csrf()
+				.disable()
+				.cors().disable()
+				.build();
 
 	}
 
@@ -140,9 +158,9 @@ public class AuthConfiguration {
 			throw new IllegalStateException(ex);
 		}
 		return keyPair;
-	} 
+	}
 
- 	@Bean
+	@Bean
 	public ProviderSettings providerSettings() {
 		return ProviderSettings.builder().build();
 	}
@@ -155,6 +173,16 @@ public class AuthConfiguration {
 	@Bean
 	public AuthLogoutHandler authenticationLogoutHandler() {
 		return new AuthLogoutHandler();
+	}
+
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(Arrays.asList("http://localhost:9000", "http://localhost:5173"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
 	}
 
 }

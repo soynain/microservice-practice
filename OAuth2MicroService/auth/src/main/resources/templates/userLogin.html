@@ -8,8 +8,9 @@
     <title>Login microservices</title>
 </head>
 <body>
-    <h4 class="text-center" th:text="${profObject}"></h4>
-    <section class="wide-area d-flex justify-content-center align-items-center min-vh-100">
+    
+    <section class="wide-area d-flex flex-column justify-content-center align-items-center min-vh-100">
+        <h4 class="text-center">Custom login for microservices practice</h4>
         <section class="login box d-flex justify-content-center align-items-center w-75 h-50">
             <form class="w-100 h-100" th:action="@{/login}" method="post">
                 <div class="mb-3">
@@ -23,6 +24,7 @@
                 <div class="mb-3 text-center">
                     <input type="submit" class="btn btn-primary w-75" value="Login in">
                 </div>
+                <div class="alert alert-danger text-center" role="alert" th:if="${param.error}">CONTRASEÑA MAL CONFIGURADA</div>
             </form>
         </section>
     </section>
