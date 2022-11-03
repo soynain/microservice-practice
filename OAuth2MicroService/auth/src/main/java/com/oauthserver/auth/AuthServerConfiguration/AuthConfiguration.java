@@ -63,6 +63,8 @@ public class AuthConfiguration {
 		  //.authorizeRequests(auth->auth.antMatchers("/microservice**").permitAll())
 		  .formLogin()
 		  .loginPage("/login")
+		  .usernameParameter("username")
+		  .passwordParameter("password")
 		  .permitAll()
 		  .defaultSuccessUrl("/another", true)
 		  .failureHandler(authenticationFailureHandler())
@@ -78,25 +80,7 @@ public class AuthConfiguration {
 		  .csrf()
 		  .disable()
 		  .build();
-		 
-		/*return http.authorizeRequests()
-				.anyRequest()
-				.authenticated()
-				.and()
-				.formLogin()
-				.loginPage("/login")
-				.defaultSuccessUrl("/another", true)
-				.permitAll()
-				.and()
-				.logout()
-				.permitAll().and().build();*/
-				/*return http.authorizeRequests(auth->auth.antMatchers("/**").permitAll())
-				.formLogin(Customizer.withDefaults())
-				.build();*/
-				/*http.authorizeRequests().antMatchers("/").permitAll()
-				.and().formLogin().loginPage("/loginzo").permitAll();
 
-				return http.build();*/
 	}
 
 	@Bean

@@ -16,7 +16,7 @@ public class AuthFailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
         AuthenticationException exception) throws IOException, ServletException {
-        response.sendRedirect("/login/form?error=true");
+        response.sendRedirect("/login?error=true");
     }
 
 }
