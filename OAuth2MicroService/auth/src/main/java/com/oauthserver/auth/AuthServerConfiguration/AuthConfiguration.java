@@ -1,188 +1,95 @@
 package com.oauthserver.auth.AuthServerConfiguration;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Arrays;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
+
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
-import com.oauthserver.auth.AuthErrorHandlers.AuthFailureHandler;
-import com.oauthserver.auth.AuthErrorHandlers.AuthLogoutHandler;
-import com.oauthserver.auth.CustomFilterPackage.JsonVueCredentialsFilter;
+import com.oauthserver.auth.AuthErrorHandlers.AuthCustomEntryEndpoint;
+import com.oauthserver.auth.Components.JwtRequestFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
+@RequiredArgsConstructor
+
 public class AuthConfiguration {
 	public static final Logger log = LoggerFactory.getLogger(AuthConfiguration.class);
 
-/* */	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-			throws Exception {
+	/*A bean for getting the customized error handler for requests */
+	@Autowired
+	private AuthCustomEntryEndpoint authCustomEntryEndpoint() {
+		return new AuthCustomEntryEndpoint();
+	}
+
+	/*Bean for getting the token and validate it's expiry time*/
+	@Autowired
+	private JwtRequestFilter jwtRequestFilter;
+
+	/*I dont know what happened here but I saw on stack overflow that
+	 * with lombok it's possible to initialize the AuthenticationConfiguration 
+	 * bean without the need of initializing by ourselves, introducing wrong parameters
+	 * and shit. I think getting this bean for work was the most difficult
+	 * thing till now, Lombok's a great fucking tool.
+	*/
+	private final AuthenticationConfiguration authenticationConfiguration;
+
+	/*Authentication manager bean with authentication configuration injected*/
+	@Bean
+	public AuthenticationManager authenticationManager() throws Exception {
 		return authenticationConfiguration.getAuthenticationManager();
 	}
 
+
+	/*The security filter chain to protect routes, add the filter to validate requests
+	 * and the customized exception handling class
+	*/
 	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE)
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		// OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-		// return http.formLogin(Customizer.withDefaults()).build();
-
-		JsonVueCredentialsFilter cumbo = new JsonVueCredentialsFilter();
-		cumbo.setAuthenticationManager(this.authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)));
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
-				.authorizeRequests(auth -> auth.antMatchers("/**").authenticated())
-				.addFilterAt(cumbo, UsernamePasswordAuthenticationFilter.class)
-				//.authenticationManager(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)))
-				.formLogin()
-				.loginPage("/login")
-				.usernameParameter("username")
-				.passwordParameter("password")
-				.permitAll()
-				.defaultSuccessUrl("/another", true)
-				// .failureHandler(authenticationFailureHandler())
-				.permitAll()
+				.csrf(csrf -> csrf.disable())
+				.authorizeRequests(auth -> auth.antMatchers("/redirect/**", "/redirect").authenticated())
+				.authorizeRequests().antMatchers("/auth").permitAll()
 				.and()
-				.logout()
-				// .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-				// .logoutUrl("/microservice/logout")
-				.deleteCookies("JESSIONID")
-				.logoutSuccessHandler(authenticationLogoutHandler())
-				.permitAll()
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.exceptionHandling().authenticationEntryPoint(authCustomEntryEndpoint())
 				.and()
-				.csrf()
-				.disable()
-				.cors().disable()
+				.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
-
 	}
 
+	/*This is just a simulation of a database, sooner I'll get to work
+	 * the user's database with Jpa or some shit
+	*/
 	@Bean
 	public InMemoryUserDetailsManager user() {
-
-		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		return new InMemoryUserDetailsManager(
 				User.withUsername("n")
-						.password(encoder.encode("1"))
+						.password(passwordEncoder().encode("1"))
 						.authorities("read")
 						.build());
 	}
 
+	/*By default the delegating method encrypts passwords in bcrypt, there are
+	 * existent prefixes in spring boot to choose other algorithms such as
+	 * sha 256, 512, etc
+	*/
 	@Bean
-	public RegisteredClientRepository registeredClientRepository() {
-		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-				.clientId("messaging-client")
-				.clientSecret("{noop}secret")
-				.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-				.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-				.authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-				.redirectUri("http://127.0.0.1:9000/login/oauth2/code/messaging-client-oidc")
-				.redirectUri("http://127.0.0.1:9000/authorized")
-				.redirectUri("http://spring.io/auth")
-				.scope(OidcScopes.OPENID)
-				.scope("message.read")
-				.scope("message.write")
-
-				// .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
-				.build();
-
-		return new InMemoryRegisteredClientRepository(registeredClient);
+	public PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
-
-	@Bean
-	public JWKSource<SecurityContext> jwkSource() {
-		KeyPair keyPair = generateRsaKey();
-		RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-		RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-		RSAKey rsaKey = new RSAKey.Builder(publicKey)
-				.privateKey(privateKey)
-				.keyID(UUID.randomUUID().toString())
-				.build();
-		JWKSet jwkSet = new JWKSet(rsaKey);
-		return new ImmutableJWKSet<>(jwkSet);
-	}
-
-	@Bean
-	private static KeyPair generateRsaKey() {
-		KeyPair keyPair;
-		try {
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-			keyPairGenerator.initialize(2048);
-			keyPair = keyPairGenerator.generateKeyPair();
-		} catch (Exception ex) {
-			throw new IllegalStateException(ex);
-		}
-		return keyPair;
-	}
-
-	@Bean
-	public ProviderSettings providerSettings() {
-		return ProviderSettings.builder().build();
-	}
-
-	@Bean
-	public AuthFailureHandler authenticationFailureHandler() {
-		return new AuthFailureHandler();
-	}
-
-	@Bean
-	public AuthLogoutHandler authenticationLogoutHandler() {
-		return new AuthLogoutHandler();
-	}
-
-	@Bean
-	CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:9000", "http://localhost:5173"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}
-
 }
