@@ -43,3 +43,20 @@ I decided to try another relational to host user credentials instead of MongoDB 
 It's just one :=P
 
 ![image](https://user-images.githubusercontent.com/78714792/197046922-1cee2872-fef7-4d7b-9f5a-b8fd18c93ff3.png)
+
+# DOCKER? I think for this practice no
+
+This practice is taking longer than expected, because of two reasons: I'm lazy as fuck and I feel it's taking
+longer than expected. I wanted to use docker but the thing is that I want to reserve that topic for later.
+
+While reading about microservices stuff with spring boot, I learned about a way to implement api gateways, by using 
+Eureka from Netflix, far easier to use than docker.
+
+![image](https://user-images.githubusercontent.com/78714792/200636964-4f227f47-27d9-4a40-9634-554b36df288f.png)
+
+
+All microservices hosted, of course I can access them but in theory, if I restrict the access to each microservice from the firewall and
+I just assign a DNS to the API Gateway, the clients can just interact with all microservices just from the gateway.
+
+
+
