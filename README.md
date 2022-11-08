@@ -43,3 +43,16 @@ I decided to try another relational to host user credentials instead of MongoDB 
 It's just one :=P
 
 ![image](https://user-images.githubusercontent.com/78714792/197046922-1cee2872-fef7-4d7b-9f5a-b8fd18c93ff3.png)
+
+# DOCKER? I think for this practice no
+
+This practice is taking longer than expected, because of two reasons: I'm lazy as fuck and I feel it's taking
+longer than expected. I wanted to use docker but the thing is that I want to reserve that topic for later.
+
+While reading about microservices stuff with spring boot, I learned about a way to implement api gateways, by using 
+Eureka from Netflix, far easier to use than docker.
+
+![image](https://user-images.githubusercontent.com/78714792/200620109-5ab2b43a-a6cc-4fa3-8704-cd9c94847896.png)
+
+Pretty awessome shit lml.
+
