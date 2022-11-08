@@ -52,7 +52,11 @@ longer than expected. I wanted to use docker but the thing is that I want to res
 While reading about microservices stuff with spring boot, I learned about a way to implement api gateways, by using 
 Eureka from Netflix, far easier to use than docker.
 
-![image](https://user-images.githubusercontent.com/78714792/200620109-5ab2b43a-a6cc-4fa3-8704-cd9c94847896.png)
+![image](https://user-images.githubusercontent.com/78714792/200636964-4f227f47-27d9-4a40-9634-554b36df288f.png)
 
-Pretty awessome shit lml.
+
+All microservices hosted, of course I can access them but in theory, if I restrict the access to each microservice from the firewall and
+I just assign a DNS to the API Gateway, the clients can just interact with all microservices just from the gateway.
+
+
 
