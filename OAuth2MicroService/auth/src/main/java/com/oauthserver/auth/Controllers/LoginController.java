@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import com.oauthserver.auth.PojoSets.CredentialsRequest;
 import com.oauthserver.auth.PojoSets.JwtTokenResponse;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/auth")
 public class LoginController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
@@ -36,10 +37,11 @@ public class LoginController {
     @Autowired
     private InMemoryUserDetailsManager userDetailsService;
     
-    @PostMapping("/auth")
+    @PostMapping("/login")
     public ResponseEntity<?> generateAndReturnTheJwtTokenToClient(@RequestBody CredentialsRequest userCredentials) throws Exception{
-        log.info(userCredentials.toString());
+        log.info(userCredentials.toString()+" a ver las credenciales");
         final String token=authenticate(userCredentials.getUsernameBinding(), userCredentials.getPasswordBinding());
+        log.info(token+" a ver el token");
         return ResponseEntity.ok(new JwtTokenResponse(token));
     }
 

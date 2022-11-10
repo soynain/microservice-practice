@@ -7,6 +7,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter{
+    private static final org.slf4j.Logger log=LoggerFactory.getLogger(JwtRequestFilter.class);
 
     /*From our configuration class, we are retrieving our "singleton"
      * bean with the users "repository"
@@ -41,6 +44,7 @@ public class JwtRequestFilter extends OncePerRequestFilter{
                 // JWT Token is in the form "Bearer token". Remove Bearer word and get
                 // only the Token
                 if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+                    
                     jwtToken = requestTokenHeader.substring(7);
                     try {
                         username = jwtTokenUtil.getUsernameFromToken(jwtToken);
@@ -50,6 +54,7 @@ public class JwtRequestFilter extends OncePerRequestFilter{
                         System.out.println("JWT Token has expired");
                     }
                 } else {
+                    log.info(requestTokenHeader+" a ver el header");
                     logger.warn("JWT Token does not begin with Bearer String");
                 }
         
