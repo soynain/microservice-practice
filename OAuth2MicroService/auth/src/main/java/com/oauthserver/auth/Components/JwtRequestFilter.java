@@ -38,7 +38,7 @@ public class JwtRequestFilter extends OncePerRequestFilter{
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
                 final String requestTokenHeader = request.getHeader("Authorization");
-
+                log.info(requestTokenHeader+" que es lo que trae el requestheader valido para setearlo en vue 3");
                 String username = null;
                 String jwtToken = null;
                 // JWT Token is in the form "Bearer token". Remove Bearer word and get

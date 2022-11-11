@@ -69,8 +69,10 @@ public class AuthConfiguration {
 	 * and the customized exception handling class
 	 */
 	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
+				.cors(cors->cors.disable())
 				.csrf(csrf -> csrf.disable())
 				.authorizeRequests(auth -> auth.antMatchers("/redirect/**", "/redirect").authenticated())
 				.authorizeRequests().antMatchers("/auth").permitAll()

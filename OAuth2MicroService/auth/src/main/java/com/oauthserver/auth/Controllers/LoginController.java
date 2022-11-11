@@ -2,6 +2,11 @@ package com.oauthserver.auth.Controllers;
 
 
 
+import java.net.URI;
+import java.util.Map;
+
+import javax.ws.rs.core.Response;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +16,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +33,6 @@ public class LoginController {
     @Autowired
     AuthenticationManager authenticationManager;
 
-
     @Autowired
     private JwtGenerator jwtGenerator;
 
@@ -40,7 +42,7 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> generateAndReturnTheJwtTokenToClient(@RequestBody CredentialsRequest userCredentials) throws Exception{
         log.info(userCredentials.toString()+" a ver las credenciales");
-        final String token=authenticate(userCredentials.getUsernameBinding(), userCredentials.getPasswordBinding());
+        String token=authenticate(userCredentials.getUsernameBinding(), userCredentials.getPasswordBinding());
         log.info(token+" a ver el token");
         return ResponseEntity.ok(new JwtTokenResponse(token));
     }
@@ -56,8 +58,8 @@ public class LoginController {
 		}
 	}
     
-    @GetMapping("/redirect/done")
-    public String jsonPrueba(){
-        return "ay caramba";
-    }
+    /*@GetMapping("/products/get-all")
+    public ResponseEntity<Void> getJsonResponseWithToken(){
+        //return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("http://localhost:8092/products/get-all")).build();
+    }*/
 }
