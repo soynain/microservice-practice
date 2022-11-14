@@ -1,6 +1,6 @@
 package com.oauthserver.auth.AuthServerConfiguration;
 
-import java.util.Arrays;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 
 import com.oauthserver.auth.AuthErrorHandlers.AuthCustomEntryEndpoint;
 import com.oauthserver.auth.Components.JwtRequestFilter;
@@ -107,14 +104,4 @@ public class AuthConfiguration {
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
-	/*@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE)
-	CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("*"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}*/
 }
