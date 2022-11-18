@@ -9,18 +9,10 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @SpringBootApplication
 @EnableMongoRepositories
-public class CartandbuymsApplication implements CommandLineRunner{
-
+public class CartandbuymsApplication{
 	@Autowired
 	MongoTemplate mongoTemplate;
 	public static void main(String[] args) {
 		SpringApplication.run(CartandbuymsApplication.class, args);
 	}
-
-	@Override
-	public void run(String... args) throws Exception {
-		mongoTemplate.getAllProductDetails();
-		
-	}
-
 }

@@ -1,9 +1,7 @@
 package com.cartandbuyms.cartandbuyms.Documents;
 
-import java.util.Date;
 
-import javax.annotation.Generated;
-
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -20,7 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SellsHistoryTransactionsCollection {
     @Id
-    private long id;
+    private ObjectId id;
     @Field
     private long fk_mysql_id_product_individual_history;
     @Field
