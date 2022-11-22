@@ -1,3 +1,7 @@
+## Till new advice, I'm holding over this practice, It's just taking me too longer and I dont feel inspired now for microservices, JUST FOR NOW.
+Maybe I'll do a more decent practice in the future. You can do pull requests if you like to this project if you feel you want to practice with
+a premade project.
+
 # Microservice introduction practice
 
 Hi, welcome to my repo. I'm planning to get into Microservices, the design, programming
